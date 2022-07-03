@@ -2,15 +2,6 @@ from .xlsx_utils import xlsx_to_df
 import pandas as pd
 
 
-class Singleton(type):
-    _instances = {}
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
 class QuotationRequest:
     def __init__(self, request):
         self.term = request.get('term', None)
@@ -23,6 +14,7 @@ class QuotationRequest:
         self.price = request.get('price', None)
 
     def create_quotation(self):
+        """ Main function - The whole process in the creation of the quotation """
         # Find health class
         self.health_class = HealthClassTable().find_health_class(self)
         # Find rate
@@ -31,11 +23,11 @@ class QuotationRequest:
         return self.build_response()
 
     def calc_price(self):
-        a = int(self.coverage)
-        b = float(self.rate)
-        # self.price = float("{:.3f}".format(((self.coverage / 1000) * self.rate)))
+        """ Calculates the price according to the defined formula """
+        self.price = float("{:.3f}".format(((self.coverage / 1000) * self.rate)))
 
     def build_response(self):
+        """ Creates the response dictionary """
         return {
             "price": self.price,
             "health-class": self.health_class,
@@ -44,20 +36,25 @@ class QuotationRequest:
         }
 
 
-# class Table(metaclass=Singleton):
-#
-#     def __init__(self):
-#         self.health_class_df = xlsx_to_df(self.HEALTH_CLASS_TABLE)
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 
 class HealthClassTable(metaclass=Singleton):
     HEALTH_CLASS_TABLE = './quotation/static/Health Class table.xlsx'
 
     def __init__(self):
+        """ Login to DB """
         self.health_class_df = xlsx_to_df(self.HEALTH_CLASS_TABLE)
         pass
 
     def find_health_class(self, quotation_request):
+        """ Finds the health class by weight and height """
         height, weight = quotation_request.height, quotation_request.weight
         # split height to foot and inch
         height_foot, height_inch = height.split()[0] + '\'', height.split()[2] + '\"'
@@ -80,11 +77,13 @@ class RatesTable(metaclass=Singleton):
     RATES_TABLE = './quotation/static/Rates-table.xlsx'
 
     def __init__(self):
+        """ Login to DB and pre-analyze the data to save requests time """
         self.rates_df = xlsx_to_df(self.RATES_TABLE)
         self.coverage_tables = self.create_coverage_tables()
         pass
 
     def create_coverage_tables(self):
+        """ Creates a separate table for each range of coverage """
         first_range = self.rates_df.iloc[:, :6]
         second_range = pd.concat([self.rates_df.iloc[:, :2], self.rates_df.iloc[:, 6:10]], axis=1, ignore_index=True)
         third_range = pd.concat([self.rates_df.iloc[:, :2], self.rates_df.iloc[:, 10:]], axis=1, ignore_index=True)
@@ -98,13 +97,16 @@ class RatesTable(metaclass=Singleton):
         }
 
     def find_rate(self, quotation_request):
-        # find coverage table
+        """ Finds the rate by term, age, coverage and health-class """
+        # Find coverage table
         coverage_table = self.find_coverage_table(quotation_request.coverage)
+        # Find rate
         for index, row in coverage_table.iterrows():
             if (row[0], row[1]) == (quotation_request.term, quotation_request.age):
                 return row[quotation_request.health_class]
 
     def find_coverage_table(self, coverage):
+        """ Finds the appropriate table by coverage """
         for k, v in self.coverage_tables.items():
             values = k.split("-")
             if int(values[0]) * 1000 <= int(coverage) <= int(values[1]) * 1000:
