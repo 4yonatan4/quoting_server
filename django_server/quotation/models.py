@@ -13,14 +13,14 @@ class Singleton(type):
 
 class QuotationRequest:
     def __init__(self, request):
-        self.term = request['term']
-        self.coverage = request['coverage']
-        self.age = request['age']
-        self.height = request['height']
-        self.weight = request['weight']
-        self.health_class = None
-        self.rate = None
-        self.price = None
+        self.term = request.get('term', None)
+        self.coverage = request.get('coverage', None)
+        self.age = request.get('age', None)
+        self.height = request.get('height', None)
+        self.weight = request.get('weight', None)
+        self.health_class = request.get('health_class', None)
+        self.rate = request.get('rate', None)
+        self.price = request.get('price', None)
         pass
 
     def create_quotation(self):
@@ -32,7 +32,9 @@ class QuotationRequest:
         return self.build_response()
 
     def calc_price(self):
-        self.price = float("{:.3f}".format(((self.coverage / 1000) * self.rate)))
+        a = int(self.coverage)
+        b = float(self.rate)
+        # self.price = float("{:.3f}".format(((self.coverage / 1000) * self.rate)))
 
     def build_response(self):
         return {
@@ -41,6 +43,12 @@ class QuotationRequest:
             "term": self.term,
             "coverage": self.coverage
         }
+
+
+# class Table(metaclass=Singleton):
+#
+#     def __init__(self):
+#         self.health_class_df = xlsx_to_df(self.HEALTH_CLASS_TABLE)
 
 
 class HealthClassTable(metaclass=Singleton):
@@ -57,13 +65,13 @@ class HealthClassTable(metaclass=Singleton):
         # find a row with height_foot & height_inch
         for index, row in self.health_class_df.iterrows():
             if (row[0], row[1]) == (height_foot, height_inch):
-                if row['Preferred Plus'] <= weight < row['Preferred']:
+                if row['Preferred Plus'] <= int(weight) < row['Preferred']:
                     return 'Preferred Plus'
-                elif row['Preferred'] <= weight < row['Standard Plus']:
+                elif row['Preferred'] <= int(weight) < row['Standard Plus']:
                     return 'Preferred'
-                elif row['Standard Plus'] <= weight < row['Standard']:
+                elif row['Standard Plus'] <= int(weight) < row['Standard']:
                     return 'Standard Plus'
-                elif row['Standard'] <= weight < row['Declined']:
+                elif row['Standard'] <= int(weight) < row['Declined']:
                     return 'Standard'
                 else:
                     return 'Declined'
@@ -100,6 +108,6 @@ class RatesTable(metaclass=Singleton):
     def find_coverage_table(self, coverage):
         for k, v in self.coverage_tables.items():
             values = k.split("-")
-            if int(values[0]) * 1000 <= coverage <= int(values[1]) * 1000:
+            if int(values[0]) * 1000 <= int(coverage) <= int(values[1]) * 1000:
                 return v
         raise ValueError(f"We don't support this coverage value: {coverage}")
