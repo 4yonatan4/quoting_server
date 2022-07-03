@@ -1,8 +1,8 @@
 # Quotes API Assignment
 
 ## Background
-Our goal is to offer a customer the best policy he is eligable to by utlizing analytics, smart routing, data feedback loops, etc.
-This story will focus on the Quoting step which is one part of supporting the product in our application process.
+Our goal is to offer a customer the best policy he is eligable to \ by utlizing analytics, smart routing, data feedback loops, etc.
+This story will focus on the Quoting step which is one part of supporting \ the product in our application process.
 The goal is to develop a server that can fetch the right quote.
 
 ## Requirements:
