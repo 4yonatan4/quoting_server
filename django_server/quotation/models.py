@@ -21,7 +21,6 @@ class QuotationRequest:
         self.health_class = request.get('health_class', None)
         self.rate = request.get('rate', None)
         self.price = request.get('price', None)
-        pass
 
     def create_quotation(self):
         # Find health class

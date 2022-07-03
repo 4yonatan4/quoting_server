@@ -14,7 +14,7 @@ class QuotationTest(APITestCase):
             "coverage": 250000,
             "age": 25,
             "height": "5 ft 1",
-            "weight": 160,
+            "weight": 160
         }
         response = self.client.post('/api/v1/quotation/', data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
