@@ -22,7 +22,8 @@ body: valid input, for example: \
             “weight”: 160\
         }
 
-HLD - HLD.pptx
+HLD - 
+![alt text](https://github.com/4yonatan4/quoting_server/blob/master/HLD.png?raw=true)
 
 Be able to test and demonstrate - \
 I used postman during development.\
